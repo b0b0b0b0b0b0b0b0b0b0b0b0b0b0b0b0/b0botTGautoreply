@@ -1,0 +1,5 @@
+{
+  "channelId": "@your_channel_username",
+  "targetUserId": null,
+  "commentConfigFile": "comment-config.json"
+}

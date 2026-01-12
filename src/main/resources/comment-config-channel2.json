@@ -1,0 +1,17 @@
+{
+  "text": "Информационное сообщение для канала 2",
+  "buttons": [
+    {
+      "text": "Кнопка 1",
+      "url": "https://example.com"
+    },
+    {
+      "text": "Кнопка 2",
+      "url": "https://example2.com"
+    },
+    {
+      "text": "Кнопка 3",
+      "url": "https://example3.com"
+    }
+  ]
+}

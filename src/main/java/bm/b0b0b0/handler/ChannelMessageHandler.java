@@ -1,19 +1,33 @@
 package bm.b0b0b0.handler;
 
 import bm.b0b0b0.config.BotConfig;
+import bm.b0b0b0.config.ChannelConfig;
+import bm.b0b0b0.config.CommentConfig;
 import bm.b0b0b0.service.CommentService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class ChannelMessageHandler {
     private final BotConfig config;
-    private final CommentService commentService;
+    private final Map<String, CommentService> commentServices;
     
-    public ChannelMessageHandler(BotConfig config, CommentService commentService) {
+    public ChannelMessageHandler(BotConfig config) throws IOException {
         this.config = config;
-        this.commentService = commentService;
+        this.commentServices = new HashMap<>();
+        
+        if (config.getChannels() != null) {
+            for (ChannelConfig channelConfig : config.getChannels()) {
+                CommentConfig commentConfig = CommentConfig.load(channelConfig.getCommentConfigFile());
+                CommentService commentService = new CommentService(commentConfig);
+                commentServices.put(channelConfig.getChannelId(), commentService);
+            }
+        }
     }
     
     public void handleUpdate(Update update, TelegramLongPollingBot bot) {
@@ -48,29 +62,46 @@ public class ChannelMessageHandler {
             return;
         }
         
-        boolean isTargetChannel = config.getChannelId() == null || 
-            (channelUsername != null && (
-                config.getChannelId().equals("@" + channelUsername) ||
-                config.getChannelId().equals(channelUsername)
-            )) ||
-            (channelId != null && config.getChannelId().equals(String.valueOf(channelId)));
+        ChannelConfig targetChannelConfig = null;
         
-        if (!isTargetChannel) {
+        if (config.getChannels() != null) {
+            for (ChannelConfig channelConfig : config.getChannels()) {
+                boolean matches = channelConfig.getChannelId() == null ||
+                    (channelUsername != null && (
+                        channelConfig.getChannelId().equals("@" + channelUsername) ||
+                        channelConfig.getChannelId().equals(channelUsername)
+                    )) ||
+                    (channelId != null && channelConfig.getChannelId().equals(String.valueOf(channelId)));
+                
+                if (matches) {
+                    targetChannelConfig = channelConfig;
+                    break;
+                }
+            }
+        }
+        
+        if (targetChannelConfig == null) {
             return;
         }
         
         if (messageToProcess.getFrom() != null) {
             Long userId = messageToProcess.getFrom().getId();
             
-            if (config.getTargetUserId() != null && config.getTargetUserId().equals(userId)) {
+            if (targetChannelConfig.getTargetUserId() != null && 
+                targetChannelConfig.getTargetUserId().equals(userId)) {
                 return;
             }
+        }
+        
+        CommentService service = commentServices.get(targetChannelConfig.getChannelId());
+        if (service == null) {
+            return;
         }
         
         try {
             Thread.sleep(500);
             Integer messageId = messageToProcess.getMessageId();
-            commentService.sendComment(bot, chatId, messageId);
+            service.sendComment(bot, chatId, messageId);
         } catch (TelegramApiException e) {
             System.err.println("Ошибка при отправке комментария: " + e.getMessage());
             e.printStackTrace();

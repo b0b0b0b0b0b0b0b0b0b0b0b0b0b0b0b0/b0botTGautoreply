@@ -1,5 +1,14 @@
 {
-  "channelId": "@your_channel_username",
-  "targetUserId": null,
-  "commentConfigFile": "comment-config.json"
+  "channels": [
+    {
+      "channelId": "@your_channel_username",
+      "targetUserId": null,
+      "commentConfigFile": "comment-config-channel1.json"
+    },
+    {
+      "channelId": "@your_channel_username2",
+      "targetUserId": null,
+      "commentConfigFile": "comment-config-channel2.json"
+    }
+  ]
 }

@@ -7,9 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 public class BotConfig {
-    private String channelId;
-    private Long targetUserId;
-    private String commentConfigFile;
+    private ChannelConfig[] channels;
     
     private BotConfig() {}
     
@@ -21,15 +19,7 @@ public class BotConfig {
         }
     }
     
-    public String getChannelId() {
-        return channelId;
-    }
-    
-    public Long getTargetUserId() {
-        return targetUserId;
-    }
-    
-    public String getCommentConfigFile() {
-        return commentConfigFile;
+    public ChannelConfig[] getChannels() {
+        return channels;
     }
 }

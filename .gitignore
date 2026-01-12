@@ -1,6 +1,7 @@
 /telegram-key.json
 /bot-config.json
-/comment-config.json
+/comment-config*.json
+/comment-config-channel*.json
 target/
 .idea/
 *.iml

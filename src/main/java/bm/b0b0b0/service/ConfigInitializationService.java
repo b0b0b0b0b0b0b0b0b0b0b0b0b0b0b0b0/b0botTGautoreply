@@ -10,8 +10,7 @@ public class ConfigInitializationService {
     
     private static final String[] CONFIG_FILES = {
         "telegram-key.json",
-        "bot-config.json",
-        "comment-config.json"
+        "bot-config.json"
     };
     
     public static boolean initializeConfigs() throws IOException {
@@ -24,6 +23,24 @@ public class ConfigInitializationService {
                 anyCreated = true;
             }
         }
+        
+        if (anyCreated) {
+            try {
+                bm.b0b0b0.config.BotConfig botConfig = bm.b0b0b0.config.BotConfig.load();
+                if (botConfig.getChannels() != null) {
+                    for (bm.b0b0b0.config.ChannelConfig channelConfig : botConfig.getChannels()) {
+                        String commentConfigFile = channelConfig.getCommentConfigFile();
+                        File commentFile = new File(commentConfigFile);
+                        if (!commentFile.exists()) {
+                            copyFromResources(commentConfigFile);
+                            System.out.println("Создан файл конфигурации: " + commentConfigFile);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+        
         return anyCreated;
     }
     
@@ -60,10 +77,16 @@ public class ConfigInitializationService {
             
             bm.b0b0b0.config.BotConfig botConfig = bm.b0b0b0.config.BotConfig.load();
             
-            String commentConfigFile = botConfig.getCommentConfigFile();
-            File commentFile = new File(commentConfigFile);
-            if (!commentFile.exists()) {
+            if (botConfig.getChannels() == null || botConfig.getChannels().length == 0) {
                 return false;
+            }
+            
+            for (bm.b0b0b0.config.ChannelConfig channelConfig : botConfig.getChannels()) {
+                String commentConfigFile = channelConfig.getCommentConfigFile();
+                File commentFile = new File(commentConfigFile);
+                if (!commentFile.exists()) {
+                    return false;
+                }
             }
             
             return true;
@@ -82,11 +105,13 @@ public class ConfigInitializationService {
         System.out.println("   - botToken: токен вашего бота от @BotFather");
         System.out.println("   - botUsername: username бота (опционально)");
         System.out.println();
-        System.out.println("2. Откройте файл bot-config.json и укажите:");
-        System.out.println("   - channelId: username вашего канала (например, @my_channel)");
-        System.out.println("   - targetUserId: ваш Telegram User ID (опционально, если хотите исключить свои сообщения)");
+        System.out.println("2. Откройте файл bot-config.json и настройте каналы:");
+        System.out.println("   - channels: массив каналов, каждый содержит:");
+        System.out.println("     * channelId: username канала (например, @my_channel)");
+        System.out.println("     * targetUserId: ваш Telegram User ID (опционально)");
+        System.out.println("     * commentConfigFile: путь к файлу с комментариями для этого канала");
         System.out.println();
-        System.out.println("3. Откройте файл comment-config.json и настройте:");
+        System.out.println("3. Для каждого канала создайте файл комментариев и настройте:");
         System.out.println("   - text: текст комментария");
         System.out.println("   - buttons: кнопки с ссылками");
         System.out.println();

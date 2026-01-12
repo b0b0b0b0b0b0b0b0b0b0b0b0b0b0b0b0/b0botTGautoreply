@@ -1,0 +1,7 @@
+telegram-key.json
+bot-config.json
+comment-config.json
+target/
+.idea/
+*.iml
+иук/
